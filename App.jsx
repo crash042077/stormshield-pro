@@ -33,15 +33,26 @@ import {
   ShieldCheck,
   ShoppingBag,
   ArrowRight,
-  Lock
+  Lock,
+  Settings
 } from 'lucide-react';
 
-// Firebase configuration using environment variables
+// --- OWNER CONFIGURATION ---
+// When you get your real Stripe keys, you'll put them here!
+const STRIPE_CONFIG = {
+  publicKey: "", // Your Stripe Public Key goes here
+  plans: {
+    standard: "price_XYZ123", // Your Stripe Price ID
+    business: "price_XYZ456",
+    enterprise: "price_XYZ789"
+  }
+};
+
 const firebaseConfig = JSON.parse(__firebase_config);
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'storm-shield-v3';
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'storm-shield-v4';
 
 const App = () => {
   const [user, setUser] = useState(null);
@@ -104,6 +115,8 @@ const App = () => {
   };
 
   const triggerStripeCheckout = (planName) => {
+    // If we have real keys, we'd redirect to Stripe.
+    // For now, we simulate the "Success"
     setView('checkout_processing');
     setIsProcessingPayment(true);
     setTimeout(async () => {
@@ -127,11 +140,15 @@ const App = () => {
           <button onClick={() => setView('pricing')} className="bg-slate-900 text-white px-8 py-3 rounded-2xl font-bold hover:scale-105 transition shadow-lg">Get Started</button>
         </nav>
         <section className="px-6 py-20 text-center max-w-4xl mx-auto">
-          <h1 className="text-6xl md:text-7xl font-black mb-8 leading-[1.1]">The Only Way to <span className="text-blue-600 underline">Automate</span> Your Restoration Sales.</h1>
-          <p className="text-xl text-slate-500 mb-10 max-w-2xl mx-auto font-medium">Compliance, contracts, and crew tracking in one high-performance dashboard.</p>
-          <button onClick={() => setView('pricing')} className="bg-blue-600 text-white px-12 py-5 rounded-3xl font-black text-xl flex items-center gap-3 mx-auto hover:bg-blue-700 transition shadow-2xl shadow-blue-200">
-            Launch Your Digital Office <ArrowRight />
-          </button>
+          <div className="inline-block bg-blue-50 text-blue-600 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">Built for Restoration Pros</div>
+          <h1 className="text-6xl md:text-8xl font-black mb-8 leading-[1.05] tracking-tight">The Digital HQ for <span className="text-blue-600">Storm Sales.</span></h1>
+          <p className="text-xl text-slate-500 mb-12 max-w-2xl mx-auto font-medium">Auto-generate compliance docs, track field reps, and close claims faster than the next hail storm.</p>
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
+            <button onClick={() => setView('pricing')} className="bg-blue-600 text-white px-12 py-5 rounded-3xl font-black text-xl flex items-center gap-3 hover:bg-blue-700 transition shadow-2xl shadow-blue-200">
+              Launch App <ArrowRight />
+            </button>
+            <button className="bg-white border-2 border-slate-100 px-12 py-5 rounded-3xl font-black text-xl hover:bg-slate-50 transition">Watch Demo</button>
+          </div>
         </section>
       </div>
     );
@@ -141,14 +158,15 @@ const App = () => {
     return (
       <div className="min-h-screen bg-slate-50 py-20 px-6">
         <div className="max-w-6xl mx-auto text-center mb-16">
-          <h2 className="text-4xl font-black mb-4">Plans for Serious Growth</h2>
-          <p className="text-slate-500 font-medium">Unlock the full power of StormShield Pro today.</p>
+          <h2 className="text-5xl font-black mb-4">Pricing That Scales</h2>
+          <p className="text-slate-500 font-medium">Simple, transparent, and built for your team.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-          <PriceCard title="Standard" price="99" features={["5 Reps", "Checklists"]} onBuy={() => triggerStripeCheckout('Standard')} />
-          <PriceCard title="Business" price="199" featured features={["Unlimited Reps", "PDF Contracts", "Dashboard"]} onBuy={() => triggerStripeCheckout('Business')} />
-          <PriceCard title="Enterprise" price="499" features={["Whitelabeling", "API", "Priority Support"]} onBuy={() => triggerStripeCheckout('Enterprise')} />
+          <PriceCard title="Standard" price="99" features={["5 Reps", "Compliance Checklists"]} onBuy={() => triggerStripeCheckout('Standard')} />
+          <PriceCard title="Business" price="199" featured features={["Unlimited Reps", "PDF Exporting", "Real-time Dashboards"]} onBuy={() => triggerStripeCheckout('Business')} />
+          <PriceCard title="Enterprise" price="499" features={["Whitelabeling", "Custom Branding", "Legal Priority"]} onBuy={() => triggerStripeCheckout('Enterprise')} />
         </div>
+        <button onClick={() => setView('landing')} className="mt-12 block mx-auto text-slate-400 font-bold hover:text-blue-600 transition underline underline-offset-4">← Return to Homepage</button>
       </div>
     );
   }
@@ -156,10 +174,15 @@ const App = () => {
   if (view === 'checkout_processing') {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-white p-6">
-        <div className="w-full max-w-md bg-slate-50 rounded-[2.5rem] p-10 text-center border border-slate-100">
-          <Loader2 className="animate-spin text-blue-600 mx-auto mb-6" size={40} />
-          <h2 className="text-2xl font-black mb-2">Connecting Stripe...</h2>
-          <p className="text-slate-500 text-sm">Securing your private payment vault.</p>
+        <div className="w-full max-w-md bg-slate-50 rounded-[3rem] p-12 text-center border border-slate-100 shadow-xl shadow-slate-200/50">
+          <div className="bg-white w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-sm">
+            <Loader2 className="animate-spin text-blue-600" size={32} />
+          </div>
+          <h2 className="text-2xl font-black mb-3">Connecting to Secure Vault...</h2>
+          <p className="text-slate-500 text-sm mb-8 leading-relaxed">We are encrypting your session and preparing the payment portal. Please don't close this window.</p>
+          <div className="flex justify-center gap-6 opacity-20">
+            <ShieldCheck size={20} /> <Lock size={20} /> <CreditCard size={20} />
+          </div>
         </div>
       </div>
     );
@@ -168,39 +191,70 @@ const App = () => {
   if (view === 'purchase_success') {
     return (
       <div className="h-screen flex flex-col items-center justify-center bg-blue-600 text-white p-6">
-        <CheckCircle2 size={80} className="mb-6" />
-        <h2 className="text-4xl font-black mb-4">You're Verified!</h2>
-        <button onClick={() => setView('dashboard')} className="bg-white text-blue-600 px-12 py-4 rounded-3xl font-black text-lg">Enter Dashboard</button>
+        <div className="bg-white/10 p-6 rounded-full mb-8 animate-bounce">
+           <CheckCircle2 size={80} className="text-white" strokeWidth={3} />
+        </div>
+        <h2 className="text-5xl font-black mb-4 tracking-tight text-center">Payment Verified!</h2>
+        <p className="text-blue-100 text-center max-w-md mb-12 text-lg">Your business account has been upgraded. You now have full access to all StormShield Pro features.</p>
+        <button 
+          onClick={() => setView('dashboard')}
+          className="bg-white text-blue-600 px-14 py-5 rounded-3xl font-black text-xl hover:scale-105 transition shadow-2xl"
+        >
+          Enter Your HQ
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="flex h-screen bg-[#F8FAFC]">
-      <aside className="w-64 bg-slate-900 text-white p-6 flex flex-col">
-        <div className="flex items-center gap-2 mb-10 font-black text-2xl"><Zap className="text-blue-500" /> Shield</div>
+    <div className="flex flex-col md:flex-row h-screen bg-[#F8FAFC]">
+      {/* Sidebar for Desktop */}
+      <aside className="w-full md:w-64 bg-slate-900 text-white p-6 flex flex-col shrink-0">
+        <div className="flex items-center gap-2 mb-10 font-black text-2xl group cursor-pointer" onClick={() => setView('landing')}>
+          <Zap className="text-blue-500 group-hover:scale-125 transition" /> Shield<span className="text-blue-500">Pro</span>
+        </div>
         <nav className="space-y-2 flex-1">
-          <SideBtn active label="Dashboard" icon={<LayoutDashboard size={20}/>} />
-          <SideBtn label="Checklists" icon={<ClipboardCheck size={20}/>} />
-          <SideBtn label="Teams" icon={<Users size={20}/>} />
+          <SideBtn active label="Company Pulse" icon={<LayoutDashboard size={20}/>} />
+          <SideBtn label="Field Tools" icon={<ClipboardCheck size={20}/>} />
+          <SideBtn label="Team Roster" icon={<Users size={20}/>} />
+          <SideBtn label="Owner Admin" icon={<Settings size={20}/>} />
         </nav>
-        <div className="bg-blue-600 p-4 rounded-2xl">
-          <p className="text-[10px] font-black uppercase opacity-60">Plan Status</p>
-          <p className="font-bold capitalize">{userProfile?.plan || 'Free'} Member</p>
+        <div className="bg-blue-600 p-5 rounded-[2rem] shadow-lg shadow-blue-900/40">
+          <p className="text-[10px] font-black uppercase opacity-60 tracking-widest mb-1">Company Status</p>
+          <p className="font-bold capitalize text-lg leading-tight">{userProfile?.plan || 'Free'} Member</p>
+          <button onClick={() => setView('pricing')} className="mt-3 text-[10px] bg-white/20 px-3 py-1 rounded-full font-black uppercase tracking-tighter hover:bg-white/40 transition">Change Plan</button>
         </div>
       </aside>
-      <main className="flex-1 p-10 overflow-y-auto">
-        <header className="flex justify-between items-center mb-10">
-          <h1 className="text-3xl font-black">Company Pulse</h1>
-          <button onClick={() => setView('landing')} className="text-slate-400 font-bold hover:text-slate-900">Sign Out</button>
+
+      {/* Main Experience */}
+      <main className="flex-1 overflow-y-auto p-6 md:p-12">
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
+          <div>
+            <h1 className="text-4xl font-black tracking-tight">Dashboard Overview</h1>
+            <p className="text-slate-400 font-medium">{userProfile?.companyName || 'Restoration Enterprise'}</p>
+          </div>
+          <div className="flex items-center gap-3 bg-white p-2 pr-6 rounded-full border border-slate-100 shadow-sm">
+            <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-black text-sm">
+              {user?.uid.substring(0, 2).toUpperCase()}
+            </div>
+            <span className="text-sm font-bold text-slate-700">Admin Mode</span>
+          </div>
         </header>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <Box label="Active Claims" val="12" />
-          <Box label="Pending Docs" val="04" />
-          <Box label="Revenue Est" val="$142k" />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          <MetricBox label="Active Claims" val="12" icon={<TrendingUp size={16} className="text-green-500" />} />
+          <MetricBox label="Pending Docs" val="04" icon={<AlertTriangle size={16} className="text-amber-500" />} />
+          <MetricBox label="Estimated Revenue" val="$142,500" icon={<DollarSign size={16} className="text-blue-500" />} />
         </div>
-        <div className="bg-white p-8 rounded-[2.5rem] border border-slate-200">
-          <h3 className="font-black text-lg mb-6">Master Compliance Checklist</h3>
+
+        <div className="bg-white p-8 md:p-12 rounded-[3rem] border border-slate-200 shadow-xl shadow-slate-200/20">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h3 className="font-black text-2xl mb-1">Master Compliance</h3>
+              <p className="text-slate-400 text-sm font-medium italic">Legal requirements for storm signings</p>
+            </div>
+            <button className="bg-slate-50 p-3 rounded-2xl hover:bg-slate-100 transition"><Printer size={20} className="text-slate-400" /></button>
+          </div>
           <div className="space-y-4">
             {checklistItems.map(item => (
               <div 
@@ -210,14 +264,15 @@ const App = () => {
                   setChecklistItems(next);
                   saveChecklist(next);
                 }}
-                className="flex items-center justify-between p-5 bg-slate-50 rounded-2xl cursor-pointer hover:bg-slate-100 transition"
+                className="flex items-center justify-between p-6 bg-[#FBFDFF] rounded-[1.5rem] border border-slate-50 cursor-pointer hover:border-blue-200 hover:bg-white transition group"
               >
                 <div className="flex items-center gap-4">
-                  <div className={`h-6 w-6 rounded-lg border-2 flex items-center justify-center ${item.completed ? 'bg-blue-600 border-blue-600' : 'border-slate-200 bg-white'}`}>
-                    {item.completed && <Check size={14} className="text-white" strokeWidth={4} />}
+                  <div className={`h-7 w-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 ${item.completed ? 'bg-blue-600 border-blue-600 scale-110 shadow-lg shadow-blue-200' : 'border-slate-200 bg-white group-hover:border-blue-400'}`}>
+                    {item.completed && <Check size={16} className="text-white" strokeWidth={4} />}
                   </div>
-                  <span className={`font-bold ${item.completed ? 'text-slate-300 line-through' : 'text-slate-700'}`}>{item.text}</span>
+                  <span className={`text-lg font-bold tracking-tight ${item.completed ? 'text-slate-300 line-through' : 'text-slate-700'}`}>{item.text}</span>
                 </div>
+                {item.required && <span className="text-[10px] font-black bg-red-50 text-red-500 px-3 py-1 rounded-full uppercase tracking-tighter">Required</span>}
               </div>
             ))}
           </div>
@@ -228,26 +283,38 @@ const App = () => {
 };
 
 const PriceCard = ({ title, price, features, featured, onBuy }) => (
-  <div className={`p-10 rounded-[3rem] border-2 bg-white ${featured ? 'border-blue-600 ring-8 ring-blue-50' : 'border-slate-100'}`}>
-    <h3 className="text-xl font-black mb-2">{title}</h3>
-    <p className="text-4xl font-black mb-8">${price}<span className="text-sm font-bold text-slate-400">/mo</span></p>
-    <ul className="space-y-4 mb-10">
-      {features.map((f, i) => <li key={i} className="flex items-center gap-3 text-sm font-bold text-slate-600"><Check size={16} className="text-blue-600" /> {f}</li>)}
+  <div className={`p-10 rounded-[3rem] border-2 bg-white transition-all hover:scale-105 ${featured ? 'border-blue-600 ring-[12px] ring-blue-50 relative' : 'border-slate-100 shadow-sm'}`}>
+    {featured && <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-6 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest">Market Leader</span>}
+    <h3 className="text-2xl font-black mb-2">{title}</h3>
+    <p className="text-5xl font-black mb-8 leading-none">${price}<span className="text-sm font-bold text-slate-400 uppercase ml-1">/mo</span></p>
+    <ul className="space-y-5 mb-12">
+      {features.map((f, i) => (
+        <li key={i} className="flex items-center gap-3 text-sm font-bold text-slate-600">
+          <div className="h-5 w-5 rounded-full bg-blue-50 flex items-center justify-center shrink-0">
+            <Check size={12} className="text-blue-600" strokeWidth={4} />
+          </div>
+          {f}
+        </li>
+      ))}
     </ul>
-    <button onClick={onBuy} className="w-full py-4 rounded-2xl bg-slate-900 text-white font-black hover:bg-blue-600 transition shadow-xl">Select {title}</button>
+    <button onClick={onBuy} className={`w-full py-5 rounded-3xl font-black text-lg transition-all shadow-xl ${featured ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-100'}`}>
+      Activate {title}
+    </button>
   </div>
 );
 
 const SideBtn = ({ label, icon, active }) => (
-  <div className={`flex items-center gap-3 p-4 rounded-xl font-bold transition cursor-pointer ${active ? 'bg-blue-600 text-white' : 'text-slate-400 hover:text-white'}`}>
-    {icon} {label}
+  <div className={`flex items-center gap-4 p-4 rounded-2xl font-bold transition-all cursor-pointer ${active ? 'bg-blue-600 text-white shadow-xl shadow-blue-900/40' : 'text-slate-400 hover:text-white hover:bg-slate-800'}`}>
+    <div className="shrink-0">{icon}</div>
+    <span className="text-sm tracking-tight">{label}</span>
   </div>
 );
 
-const Box = ({ label, val }) => (
-  <div className="bg-white p-8 rounded-[2rem] border border-slate-200 text-center shadow-sm">
-    <p className="text-3xl font-black">{val}</p>
-    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">{label}</p>
+const MetricBox = ({ label, val, icon }) => (
+  <div className="bg-white p-8 rounded-[2.5rem] border border-slate-100 text-center shadow-xl shadow-slate-200/10 hover:shadow-blue-100/50 transition duration-500">
+    <div className="flex justify-center mb-4">{icon}</div>
+    <p className="text-4xl font-black text-slate-900 leading-none mb-1">{val}</p>
+    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{label}</p>
   </div>
 );
 
