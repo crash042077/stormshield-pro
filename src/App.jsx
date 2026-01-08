@@ -38,17 +38,34 @@ import {
 } from 'lucide-react';
 
 // --- OWNER CONFIGURATION ---
-// When you get your real Stripe keys, you'll put them here!
 const STRIPE_CONFIG = {
-  publicKey: "", // Your Stripe Public Key goes here
+  publicKey: "", 
   plans: {
-    standard: "price_XYZ123", // Your Stripe Price ID
+    standard: "price_XYZ123",
     business: "price_XYZ456",
     enterprise: "price_XYZ789"
   }
 };
 
-const firebaseConfig = JSON.parse(__firebase_config);
+// --- SAFER FIREBASE INITIALIZATION ---
+// This prevents the "Blank Screen" crash if config is missing
+let firebaseConfig = {
+  apiKey: "placeholder",
+  authDomain: "placeholder",
+  projectId: "placeholder",
+  storageBucket: "placeholder",
+  messagingSenderId: "placeholder",
+  appId: "placeholder"
+};
+
+try {
+  if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+    firebaseConfig = JSON.parse(__firebase_config);
+  }
+} catch (e) {
+  console.error("Firebase config parse error:", e);
+}
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -89,7 +106,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || firebaseConfig.apiKey === "placeholder") return;
     const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
     const dataRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'appState');
 
@@ -109,19 +126,19 @@ const App = () => {
   }, [user]);
 
   const saveChecklist = async (items) => {
-    if (!user) return;
+    if (!user || firebaseConfig.apiKey === "placeholder") return;
     const dataRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'appState');
     await setDoc(dataRef, { checklist: items, lastUpdated: new Date().toISOString() }, { merge: true });
   };
 
   const triggerStripeCheckout = (planName) => {
-    // If we have real keys, we'd redirect to Stripe.
-    // For now, we simulate the "Success"
     setView('checkout_processing');
     setIsProcessingPayment(true);
     setTimeout(async () => {
-      const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
-      await setDoc(profileRef, { plan: planName.toLowerCase(), status: 'active' }, { merge: true });
+      if (firebaseConfig.apiKey !== "placeholder") {
+        const profileRef = doc(db, 'artifacts', appId, 'users', user.uid, 'settings', 'profile');
+        await setDoc(profileRef, { plan: planName.toLowerCase(), status: 'active' }, { merge: true });
+      }
       setIsProcessingPayment(false);
       setView('purchase_success');
     }, 2500);
@@ -208,7 +225,6 @@ const App = () => {
 
   return (
     <div className="flex flex-col md:flex-row h-screen bg-[#F8FAFC]">
-      {/* Sidebar for Desktop */}
       <aside className="w-full md:w-64 bg-slate-900 text-white p-6 flex flex-col shrink-0">
         <div className="flex items-center gap-2 mb-10 font-black text-2xl group cursor-pointer" onClick={() => setView('landing')}>
           <Zap className="text-blue-500 group-hover:scale-125 transition" /> Shield<span className="text-blue-500">Pro</span>
@@ -226,7 +242,6 @@ const App = () => {
         </div>
       </aside>
 
-      {/* Main Experience */}
       <main className="flex-1 overflow-y-auto p-6 md:p-12">
         <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-4">
           <div>
@@ -319,4 +334,3 @@ const MetricBox = ({ label, val, icon }) => (
 );
 
 export default App;
-
