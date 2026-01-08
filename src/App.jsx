@@ -1,96 +1,48 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { 
-  CheckCircle2, ClipboardCheck, LayoutDashboard, Settings, 
-  Printer, Zap, Check, ArrowRight, Loader2, ShieldCheck, AlertCircle 
+  ShieldCheck, Printer, Zap, ArrowRight, AlertCircle, Info 
 } from 'lucide-react';
 
-// --- INITIALIZATION (OFFLINE DEMO MODE FOR SALES) ---
-const app = null;
-const db = null;
-const auth = { 
-  onAuthStateChanged: (callback) => {
-    // This tells the app you are already logged in so the dashboard opens immediately!
-    callback({ uid: 'sales-demo-user' }); 
-    return () => {}; 
-  } 
-};
-
 const App = () => {
-  const [user, setUser] = useState({ uid: 'demo' });
   const [view, setView] = useState('landing'); 
-  const [loading, setLoading] = useState(false); // Set to false to bypass loading screen
   const [activeDoc, setActiveDoc] = useState(null);
   const [userProfile, setUserProfile] = useState({
     companyName: 'StormShield Pro User',
     licenseNum: 'MN-PENDING',
-    companyAddress: 'Waverly, MN',
   });
 
   const checklistItems = [
     { id: 1, text: "MN Statutory Warranty (Chapter 327A)" },
     { id: 2, text: "MN 3-Day Notice of Cancellation (Duplicate)" },
-    { id: 3, text: "Boldface Signature Warning (MN 325G.08)" },
-    { id: 4, text: "Lead Warning Statement (EPA/MN)" },
+    { id: 3, text: "MN Pre-Lien Notice (Statute 514.011)" },
+    { id: 4, text: "Insurance Fraud & Deductible (MN 325E.66)" },
+    { id: 5, text: "Cancellation if Claim Denied (MN 326B.811)" },
+    { id: 6, text: "Lead Warning Statement (EPA/MN)" },
   ];
 
-  // --- THE MINNESOTA LEGAL VAULT ---
   const templates = {
-    "Boldface Signature Warning (MN 325G.08)": `
-      MANDATORY MN STATUTE 325G.08 DISCLOSURE
-      (Must be in 10-point Bold Type near Signature)
-      
-      "You, the buyer, may cancel this purchase at any time prior to 
-      midnight of the third business day after the date of this purchase. 
-      See attached notice of cancellation form for an explanation of this right."
-    `,
-    "MN 3-Day Notice of Cancellation (Duplicate)": `
-      NOTICE OF CANCELLATION (MN STATUTE 325G.08)
-      (Required to be provided in DUPLICATE)
-      
-      Date of Transaction: __________
-      
-      You may CANCEL this transaction, without any penalty or obligation, 
-      within THREE BUSINESS DAYS from the above date.
-      
-      If you cancel, any property traded in, any payments made by you 
-      under the contract or sale, and any negotiable instrument executed 
-      by you will be returned within TEN BUSINESS DAYS...
-    `,
-    "MN Statutory Warranty (Chapter 327A)": `
-      STATUTORY WARRANTIES (MN CHAPTER 327A)
-      
-      1 YEAR: The dwelling shall be free from defects caused by faulty 
-      workmanship and defective materials.
-      
-      2 YEARS: The dwelling shall be free from defects caused by faulty 
-      installation of plumbing, electrical, heating, and cooling systems.
-      
-      10 YEARS: The dwelling shall be free from major structural defects.
-    `,
-    "Lead Warning Statement (EPA/MN)": `
-      EPA LEAD WARNING STATEMENT (PRE-1978 HOUSING)
-      
-      Housing built before 1978 may contain lead-based paint. Lead from 
-      paint, paint chips, and dust can pose health hazards if not managed 
-      properly. Contractors performing RRP projects in pre-1978 homes 
-      must be lead-safe certified.
-    `
+    "MN Statutory Warranty (Chapter 327A)": "STATUTORY WARRANTIES (MN CHAPTER 327A)\n\n1 YEAR: Faulty workmanship/materials.\n2 YEARS: Plumbing, electrical, heating, cooling.\n10 YEARS: Major structural defects.",
+    "MN 3-Day Notice of Cancellation (Duplicate)": "NOTICE OF CANCELLATION (MN STATUTE 325G.08)\n\nYou may CANCEL this transaction without penalty within THREE BUSINESS DAYS.",
+    "MN Pre-Lien Notice (Statute 514.011)": "NOTICE OF LIEN RIGHTS (MN STATUTE 514.011)\n\nANY PERSON SUPPLYING LABOR OR MATERIALS MAY FILE A LIEN AGAINST YOUR PROPERTY IF NOT PAID.",
+    "Insurance Fraud & Deductible (MN 325E.66)": "MANDATORY MN STATUTE 325E.66 NOTICE:\n\nA residential contractor shall not advertise or promise to pay or rebate all or any portion of any applicable insurance deductible.",
+    "Cancellation if Claim Denied (MN 326B.811)": "RIGHT TO CANCEL (MN STATUTE 326B.811)\n\nIf your insurance company denies the claim, you may cancel this contract within 72 hours of receiving the denial notice.",
+    "Lead Warning Statement (EPA/MN)": "EPA LEAD WARNING STATEMENT\n\nHousing built before 1978 may contain lead-based paint."
   };
 
   const DocumentModal = () => (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-white rounded-[2.5rem] w-full max-w-2xl p-8 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
-        <div className="flex justify-between items-center mb-6">
-          <ShieldCheck className="text-blue-600" size={32} />
-          <button onClick={() => setActiveDoc(null)} className="text-slate-400 font-black text-xl">✕</button>
+    <div className="fixed inset-0 bg-slate-900/90 flex items-center justify-center p-4 z-50 backdrop-blur-md">
+      <div className="bg-white rounded-[3rem] w-full max-w-2xl p-10 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
+        <div className="flex justify-between items-center mb-8">
+          <ShieldCheck className="text-blue-600" size={40} />
+          <button onClick={() => setActiveDoc(null)} className="bg-slate-100 p-3 rounded-full text-slate-500 font-black">✕</button>
         </div>
-        <h2 className="text-2xl font-black mb-4">{activeDoc}</h2>
-        <div className="bg-slate-50 p-6 rounded-3xl font-mono text-sm border border-slate-200 whitespace-pre-wrap leading-relaxed">
-          <p className="font-black uppercase mb-4 text-blue-800">{userProfile.companyName} | LIC# {userProfile.licenseNum}</p>
-          {templates[activeDoc] || "MN Standard Statutory Language Applied."}
+        <h2 className="text-3xl font-black mb-6 text-slate-900 leading-tight">{activeDoc}</h2>
+        <div className="bg-slate-50 p-8 rounded-[2rem] font-mono text-sm border border-slate-200 whitespace-pre-wrap leading-relaxed text-slate-700">
+          <p className="font-black uppercase mb-6 text-blue-700 border-b border-blue-100 pb-4">{userProfile.companyName} | LIC# {userProfile.licenseNum}</p>
+          {templates[activeDoc]}
         </div>
-        <button onClick={() => window.print()} className="mt-8 w-full bg-slate-900 text-white py-5 rounded-3xl font-black text-xl flex items-center justify-center gap-3">
-          <Printer size={20} /> Print Full Packet
+        <button onClick={() => window.print()} className="mt-10 w-full bg-blue-600 text-white py-6 rounded-3xl font-black text-xl flex items-center justify-center gap-3 hover:bg-blue-700 transition-all shadow-xl shadow-blue-200">
+          <Printer size={24} /> Print For Homeowner
         </button>
       </div>
     </div>
@@ -98,54 +50,41 @@ const App = () => {
 
   if (view === 'dashboard') {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+      <div className="min-h-screen bg-slate-900 text-white p-6 md:p-12">
         {activeDoc && <DocumentModal />}
-        <aside className="w-64 bg-slate-900 text-white p-8 hidden md:flex flex-col">
-          <div className="text-2xl font-black mb-12 flex items-center gap-2"><Zap className="text-blue-500 fill-blue-500" /> ShieldPro</div>
-          <nav className="space-y-4 flex-1">
-            <button onClick={() => setView('dashboard')} className="flex items-center gap-3 w-full p-4 bg-blue-600 rounded-2xl font-black shadow-lg shadow-blue-900/40 transition text-left">Dashboard</button>
-            <button onClick={() => setView('settings')} className="flex items-center gap-3 w-full p-4 text-slate-400 font-bold hover:text-white transition text-left">Settings</button>
-          </nav>
-        </aside>
-        <main className="flex-1 p-8 md:p-16">
-          <h1 className="text-4xl font-black mb-2 tracking-tighter">{userProfile.companyName} Dashboard</h1>
-          <p className="text-slate-400 font-bold mb-12 uppercase tracking-widest text-xs">MN Compliance HQ</p>
-          <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-slate-100">
-            <div className="flex items-center gap-3 mb-8 text-amber-500"><AlertCircle /> <span className="font-black text-xs uppercase tracking-widest">Required Signing Documents</span></div>
-            <div className="space-y-4">
-              {checklistItems.map(item => (
-                <div key={item.id} className="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100 group hover:border-blue-200 transition">
-                  <span className="font-black text-slate-700 tracking-tight">{item.text}</span>
-                  <button onClick={() => setActiveDoc(item.text)} className="bg-white px-6 py-3 rounded-2xl text-[10px] font-black text-blue-600 border border-blue-100 shadow-sm hover:bg-blue-600 hover:text-white transition-all">VIEW TEMPLATE</button>
+        <header className="max-w-4xl mx-auto flex justify-between items-center mb-12">
+          <div className="flex items-center gap-2 text-2xl font-black italic tracking-tighter text-blue-400"><Zap fill="currentColor" /> ShieldPro</div>
+          <button onClick={() => setView('landing')} className="text-xs font-bold uppercase tracking-widest text-slate-500">Sign Out</button>
+        </header>
+        <main className="max-w-4xl mx-auto">
+          <h1 className="text-5xl font-black mb-2 tracking-tighter">HQ Dashboard</h1>
+          <p className="text-blue-400 font-bold mb-10 text-sm uppercase tracking-widest">{userProfile.companyName}</p>
+          <div className="grid gap-4">
+            {checklistItems.map(item => (
+              <div key={item.id} className="flex items-center justify-between p-8 bg-slate-800/50 rounded-[2.5rem] border border-slate-700/50 hover:border-blue-500/50 transition-all group">
+                <div className="flex items-center gap-4">
+                  <div className="bg-blue-500/10 p-3 rounded-2xl text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-colors"><Info size={20} /></div>
+                  <span className="font-bold text-slate-200 text-lg leading-tight">{item.text}</span>
                 </div>
-              ))}
-            </div>
+                <button onClick={() => setActiveDoc(item.text)} className="bg-blue-600 text-white px-6 py-4 rounded-2xl text-[10px] font-black tracking-widest uppercase shadow-lg shadow-blue-900/20 hover:scale-105 transition-all">VIEW</button>
+              </div>
+            ))}
           </div>
         </main>
       </div>
     );
   }
 
-  if (view === 'settings') {
-    return (
-      <div className="min-h-screen bg-white p-12 max-w-2xl mx-auto flex flex-col justify-center">
-        <h1 className="text-5xl font-black mb-4 tracking-tighter">Your Identity</h1>
-        <p className="text-slate-500 mb-12 font-medium">Update these fields to brand your legal documents.</p>
-        <div className="space-y-6">
-          <input type="text" value={userProfile.companyName} onChange={(e) => setUserProfile({...userProfile, companyName: e.target.value})} className="w-full p-6 bg-slate-50 border border-slate-100 rounded-3xl font-black" placeholder="Company Name" />
-          <input type="text" value={userProfile.licenseNum} onChange={(e) => setUserProfile({...userProfile, licenseNum: e.target.value})} className="w-full p-6 bg-slate-50 border border-slate-100 rounded-3xl font-black" placeholder="MN License #" />
-          <button onClick={() => setView('dashboard')} className="w-full bg-blue-600 text-white py-6 rounded-[2rem] font-black text-2xl shadow-2xl shadow-blue-200">Update HQ</button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-slate-900 text-white">
-      <Zap className="text-blue-500 mb-8" size={80} />
-      <h1 className="text-7xl font-black mb-4 tracking-tighter">ShieldPro</h1>
-      <p className="text-xl text-slate-400 mb-12 max-w-lg font-medium italic">Minnesota's smartest restoration sales engine.</p>
-      <button onClick={() => setView('dashboard')} className="bg-blue-600 text-white px-16 py-7 rounded-full font-black text-2xl shadow-2xl shadow-blue-500/20 flex items-center gap-4 hover:scale-105 transition">ENTER YOUR HQ <ArrowRight /></button>
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-slate-900 text-white overflow-hidden relative">
+      <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] left-[-10%] w-96 h-96 bg-blue-500/10 rounded-full blur-[120px]" />
+      <Zap className="text-blue-500 mb-8 animate-pulse" size={100} fill="currentColor" />
+      <h1 className="text-[5rem] md:text-[8rem] font-black mb-4 tracking-tighter leading-none italic">ShieldPro</h1>
+      <p className="text-xl md:text-2xl text-slate-400 mb-12 max-w-lg font-medium leading-relaxed">Minnesota's smartest restoration sales engine.</p>
+      <button onClick={() => setView('dashboard')} className="group relative bg-blue-600 text-white px-12 py-8 rounded-[2.5rem] font-black text-2xl shadow-2xl shadow-blue-500/40 flex items-center gap-6 hover:bg-blue-500 transition-all active:scale-95">
+        ENTER YOUR HQ <ArrowRight className="group-hover:translate-x-2 transition-transform" />
+      </button>
     </div>
   );
 };
