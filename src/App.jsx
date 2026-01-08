@@ -1,23 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, doc, setDoc, onSnapshot } from 'firebase/firestore';
 import { 
   CheckCircle2, ClipboardCheck, LayoutDashboard, Settings, 
   Printer, Zap, Check, ArrowRight, Loader2, ShieldCheck, AlertCircle 
 } from 'lucide-react';
 
-// --- INITIALIZATION ---
-let firebaseConfig = { apiKey: "placeholder" };
-try { if (typeof __firebase_config !== 'undefined' && __firebase_config) { firebaseConfig = JSON.parse(__firebase_config); } } catch (e) {}
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
+// --- INITIALIZATION (OFFLINE DEMO MODE FOR SALES) ---
+const app = null;
+const db = null;
+const auth = { 
+  onAuthStateChanged: (callback) => {
+    // This tells the app you are already logged in so the dashboard opens immediately!
+    callback({ uid: 'sales-demo-user' }); 
+    return () => {}; 
+  } 
+};
 
 const App = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState({ uid: 'demo' });
   const [view, setView] = useState('landing'); 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Set to false to bypass loading screen
   const [activeDoc, setActiveDoc] = useState(null);
   const [userProfile, setUserProfile] = useState({
     companyName: 'StormShield Pro User',
@@ -31,14 +32,6 @@ const App = () => {
     { id: 3, text: "Boldface Signature Warning (MN 325G.08)" },
     { id: 4, text: "Lead Warning Statement (EPA/MN)" },
   ];
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-    return () => unsubscribe();
-  }, []);
 
   // --- THE MINNESOTA LEGAL VAULT ---
   const templates = {
@@ -84,14 +77,12 @@ const App = () => {
     `
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" size={40} /></div>;
-
   const DocumentModal = () => (
     <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
       <div className="bg-white rounded-[2.5rem] w-full max-w-2xl p-8 shadow-2xl border border-slate-100 overflow-y-auto max-h-[90vh]">
         <div className="flex justify-between items-center mb-6">
           <ShieldCheck className="text-blue-600" size={32} />
-          <button onClick={() => setActiveDoc(null)} className="text-slate-400 font-black">✕ CLOSE</button>
+          <button onClick={() => setActiveDoc(null)} className="text-slate-400 font-black text-xl">✕</button>
         </div>
         <h2 className="text-2xl font-black mb-4">{activeDoc}</h2>
         <div className="bg-slate-50 p-6 rounded-3xl font-mono text-sm border border-slate-200 whitespace-pre-wrap leading-relaxed">
@@ -112,8 +103,8 @@ const App = () => {
         <aside className="w-64 bg-slate-900 text-white p-8 hidden md:flex flex-col">
           <div className="text-2xl font-black mb-12 flex items-center gap-2"><Zap className="text-blue-500 fill-blue-500" /> ShieldPro</div>
           <nav className="space-y-4 flex-1">
-            <button onClick={() => setView('dashboard')} className="flex items-center gap-3 w-full p-4 bg-blue-600 rounded-2xl font-black shadow-lg shadow-blue-900/40 transition">Dashboard</button>
-            <button onClick={() => setView('settings')} className="flex items-center gap-3 w-full p-4 text-slate-400 font-bold hover:text-white transition">Settings</button>
+            <button onClick={() => setView('dashboard')} className="flex items-center gap-3 w-full p-4 bg-blue-600 rounded-2xl font-black shadow-lg shadow-blue-900/40 transition text-left">Dashboard</button>
+            <button onClick={() => setView('settings')} className="flex items-center gap-3 w-full p-4 text-slate-400 font-bold hover:text-white transition text-left">Settings</button>
           </nav>
         </aside>
         <main className="flex-1 p-8 md:p-16">
