@@ -1,79 +1,119 @@
 import React, { useState } from 'react';
 import { 
-  ShieldCheck, Printer, Zap, ArrowRight, FileText, UserPlus, ClipboardList, TrendingUp 
+  ShieldCheck, Printer, Zap, ArrowRight, FileText, Settings, Home, CheckCircle 
 } from 'lucide-react';
 
 const App = () => {
   const [view, setView] = useState('landing'); 
   const [activeDoc, setActiveDoc] = useState(null);
-  const [customers, setCustomers] = useState([
-    { id: 1, name: "The Miller Project", address: "Waverly, MN", status: "Insurance Pending" },
-    { id: 2, name: "Anderson Residence", address: "Montrose, MN", status: "Signed & Ready" }
-  ]);
+  
+  // This is the "Product" you are selling - the ability to customize!
+  const [userProfile, setUserProfile] = useState({
+    companyName: 'Your Roofing Co',
+    licenseNum: 'BC123456',
+    address: '123 Main St, Waverly, MN'
+  });
 
   const checklistItems = [
     { id: 1, text: "MN Statutory Warranty (Chapter 327A)" },
     { id: 2, text: "MN 3-Day Notice of Cancellation (Duplicate)" },
     { id: 3, text: "MN Pre-Lien Notice (Statute 514.011)" },
     { id: 4, text: "Insurance Fraud & Deductible (MN 325E.66)" },
-    { id: 5, text: "Cancellation if Claim Denied (MN 326B.811)" }
   ];
 
-  if (view === 'dashboard') {
-    return (
-      <div className="min-h-screen bg-slate-900 text-white p-4 md:p-12 overflow-x-hidden font-sans">
-        <header className="max-w-xl mx-auto flex justify-between items-center mb-10">
-          <div className="flex items-center gap-2 text-xl font-black italic text-blue-400" onClick={() => setView('landing')}><Zap fill="currentColor" size={24} /> ShieldPro</div>
-          <button onClick={() => setView('landing')} className="text-[10px] font-black uppercase text-slate-500">Log Out</button>
-        </header>
+  const templates = {
+    "MN Statutory Warranty (Chapter 327A)": `STATUTORY WARRANTIES (MN § 327A.02)\n\nContractor: ${userProfile.companyName}\nLicense: ${userProfile.licenseNum}\n\n1 YEAR: Workmanship.\n2 YEARS: Systems.\n10 YEARS: Structural.`,
+    "MN 3-Day Notice of Cancellation (Duplicate)": `NOTICE OF CANCELLATION (MN § 325G.08)\n\nYou may CANCEL this transaction without penalty within THREE BUSINESS DAYS.`,
+    "MN Pre-Lien Notice (Statute 514.011)": `PRE-LIEN NOTICE (MN § 514.011)\n\nNOTICE: ANY PERSON SUPPLYING LABOR OR MATERIALS MAY FILE A LIEN IF NOT PAID.`,
+    "Insurance Fraud & Deductible (MN 325E.66)": `DEDUCTIBLE DISCLOSURE (MN § 325E.66)\n\nA contractor shall not promise to pay or rebate any portion of an insurance deductible.`,
+  };
 
-        <main className="max-w-xl mx-auto">
-          <div className="flex justify-between items-end mb-8">
-            <div>
-              <h1 className="text-4xl font-black tracking-tighter leading-none">Sales HQ</h1>
-              <p className="text-blue-400 font-bold text-[10px] uppercase tracking-[0.2em] mt-2">Active Projects</p>
-            </div>
-            <button className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-900/40"><UserPlus size={20}/></button>
+  const Dashboard = () => (
+    <div className="min-h-screen bg-slate-900 text-white p-6 font-sans">
+      <header className="flex justify-between items-center mb-10">
+        <div className="flex items-center gap-2 text-xl font-black italic text-blue-400"><Zap fill="currentColor" size={24} /> ShieldPro</div>
+        <div className="flex gap-4">
+          <button onClick={() => setView('dashboard')} className={`p-2 ${view === 'dashboard' ? 'text-blue-400' : 'text-slate-500'}`}><Home /></button>
+          <button onClick={() => setView('settings')} className={`p-2 ${view === 'settings' ? 'text-blue-400' : 'text-slate-500'}`}><Settings /></button>
+        </div>
+      </header>
+      
+      <h1 className="text-4xl font-black mb-8 tracking-tighter">Compliance HQ</h1>
+      <div className="space-y-3">
+        {checklistItems.map(item => (
+          <div key={item.id} className="flex items-center justify-between p-6 bg-slate-800/40 rounded-[2rem] border border-slate-700/50">
+            <span className="font-bold text-slate-200 text-sm">{item.text}</span>
+            <button onClick={() => setActiveDoc(item.text)} className="bg-blue-600 text-white px-5 py-3 rounded-xl text-[9px] font-black uppercase">View</button>
           </div>
-
-          {/* CUSTOMER PROFILES - This is the "Smooth Runner" Section */}
-          <div className="grid gap-3 mb-12">
-            {customers.map(c => (
-              <div key={c.id} className="bg-slate-800/60 p-5 rounded-[2rem] border border-slate-700/50 flex items-center justify-between group hover:border-blue-500/50 transition-all">
-                <div>
-                  <h3 className="font-black text-lg text-slate-100">{c.name}</h3>
-                  <p className="text-xs text-slate-500 font-bold uppercase">{c.address} • <span className="text-blue-400">{c.status}</span></p>
-                </div>
-                <ArrowRight className="text-slate-600 group-hover:text-blue-400 transition-colors" size={20}/>
-              </div>
-            ))}
-          </div>
-
-          <h2 className="text-[10px] font-black uppercase text-slate-500 tracking-[0.2em] mb-4">MN Compliance Vault</h2>
-          <div className="space-y-3">
-            {checklistItems.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-5 bg-slate-800/30 rounded-[1.5rem] border border-slate-700/30">
-                <div className="flex items-center gap-4 flex-1 pr-4">
-                  <FileText className="text-blue-500/50" size={18} />
-                  <span className="font-bold text-slate-300 text-sm leading-tight">{item.text}</span>
-                </div>
-                <button className="bg-slate-700 text-white px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest">Open</button>
-              </div>
-            ))}
-          </div>
-        </main>
+        ))}
       </div>
-    );
-  }
+
+      {activeDoc && (
+        <div className="fixed inset-0 bg-slate-900/95 flex items-center justify-center p-4 z-50 backdrop-blur-xl">
+          <div className="bg-white rounded-[2.5rem] w-full max-w-lg p-8 shadow-2xl overflow-y-auto max-h-[90vh]">
+            <h2 className="text-xl font-black mb-4 text-slate-900">{activeDoc}</h2>
+            <div className="bg-slate-50 p-6 rounded-2xl font-mono text-[11px] border border-slate-200 whitespace-pre-wrap leading-relaxed text-slate-700 mb-6">
+              <p className="font-black uppercase mb-4 text-blue-700">{userProfile.companyName} • {userProfile.licenseNum}</p>
+              {templates[activeDoc]}
+            </div>
+            <button onClick={() => setActiveDoc(null)} className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black uppercase text-xs tracking-widest">Close Preview</button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  const SettingsPage = () => (
+    <div className="min-h-screen bg-slate-900 text-white p-6 font-sans">
+       <header className="flex justify-between items-center mb-10">
+        <div className="flex items-center gap-2 text-xl font-black italic text-blue-400"><Zap fill="currentColor" size={24} /> ShieldPro</div>
+        <div className="flex gap-4">
+          <button onClick={() => setView('dashboard')} className="p-2 text-slate-500"><Home /></button>
+          <button onClick={() => setView('settings')} className="p-2 text-blue-400"><Settings /></button>
+        </div>
+      </header>
+      <h1 className="text-4xl font-black mb-2 tracking-tighter">Company Setup</h1>
+      <p className="text-slate-500 text-xs font-bold uppercase mb-8 tracking-widest">Customize your Legal Output</p>
+      
+      <div className="space-y-6">
+        <div>
+          <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block">Company Name</label>
+          <input 
+            className="w-full bg-slate-800 border border-slate-700 p-5 rounded-2xl font-bold text-white focus:border-blue-500 outline-none"
+            value={userProfile.companyName}
+            onChange={(e) => setUserProfile({...userProfile, companyName: e.target.value})}
+          />
+        </div>
+        <div>
+          <label className="text-[10px] font-black uppercase text-slate-500 mb-2 block">MN License #</label>
+          <input 
+            className="w-full bg-slate-800 border border-slate-700 p-5 rounded-2xl font-bold text-white focus:border-blue-500 outline-none"
+            value={userProfile.licenseNum}
+            onChange={(e) => setUserProfile({...userProfile, licenseNum: e.target.value})}
+          />
+        </div>
+        <div className="bg-blue-600/10 border border-blue-500/20 p-6 rounded-[2rem] mt-10">
+          <div className="flex items-center gap-3 text-blue-400 mb-2">
+            <CheckCircle size={20} />
+            <span className="font-black text-xs uppercase tracking-widest">Live Sync Active</span>
+          </div>
+          <p className="text-slate-400 text-[11px] leading-relaxed">Changes here will automatically update all MN statutory forms in your vault.</p>
+        </div>
+      </div>
+    </div>
+  );
+
+  if (view === 'settings') return <SettingsPage />;
+  if (view === 'dashboard') return <Dashboard />;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-900 text-white font-sans">
-      <div className="absolute top-0 w-full h-full bg-[radial-gradient(circle_at_50%_50%,rgba(37,99,235,0.15),transparent_70%)]" />
-      <Zap className="text-blue-500 mb-6 animate-pulse" size={80} fill="currentColor" />
-      <h1 className="text-7xl font-black mb-4 tracking-tighter leading-none italic drop-shadow-2xl">ShieldPro</h1>
-      <p className="text-lg text-slate-400 mb-12 max-w-sm font-medium leading-relaxed">Turnkey Front-End System for MN Contractors.</p>
-      <button onClick={() => setView('dashboard')} className="relative z-10 bg-blue-600 text-white px-12 py-8 rounded-[2.5rem] font-black text-2xl shadow-2xl flex items-center gap-5 hover:scale-105 transition-transform active:scale-95">
-        LAUNCH HQ <TrendingUp size={28} />
+    <div className="min-h-screen flex flex-col items-center justify-center p-8 text-center bg-slate-900 text-white relative overflow-hidden">
+      <div className="absolute top-[-20%] right-[-20%] w-96 h-96 bg-blue-600/20 rounded-full blur-[120px]" />
+      <Zap className="text-blue-500 mb-8 animate-pulse" size={100} fill="currentColor" />
+      <h1 className="text-7xl font-black mb-4 tracking-tighter leading-none italic">ShieldPro</h1>
+      <p className="text-xl text-slate-400 mb-12 max-w-sm font-medium">Professional Restoration Sales Software for MN Contractors.</p>
+      <button onClick={() => setView('dashboard')} className="bg-blue-600 text-white px-12 py-8 rounded-[2.5rem] font-black text-2xl shadow-2xl flex items-center gap-5 hover:scale-105 transition-transform active:scale-95">
+        LAUNCH SYSTEM <ArrowRight size={28} />
       </button>
     </div>
   );
